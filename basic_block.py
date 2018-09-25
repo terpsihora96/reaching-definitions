@@ -185,10 +185,9 @@ def erase_empty_block(blocks, n):
 # key: number of an instruction
 # value: (variable x, list of variables used for a definition of variable x) 
 def make_definitions(tac_file):
-        # a map / dict is used due to many search and insert operations
     definitions = dict()
     # regex for matching instructions with an assign operator 
-    regex = "^(?P<num>[0-9]+): (?P<var_name>(\w+)|(\w+\[\w+\]))+ \s*:=\s*(?P<def>(.)+)$";
+    regex = "^(?P<num>[0-9]+): (?P<var_name>(\w+\[\w+\])|(\w+))+ \s*:=\s*(?P<def>(.)+)$";
     regex_def = re.compile(regex)
     # needed for gen function
     num_lines = 0

@@ -2,7 +2,9 @@ import copy
 import argparse
 from sys import argv
 
-import bb
+import yacc
+import parser
+import basic_block as bb
 
 # gen for all basic blocks
 def gen(blocks, list_ids, definitions):
@@ -92,6 +94,12 @@ def main():
     args = parser.parse_args()
     file = args.file
     location = args.location
+
+    # parse a file to see whether it contains a
+    # valid three-address instructions
+    with open(file, "r") as tac_file:
+        for i, line in enumerate(tac_file):
+            yacc.parse(line)
 
     definitions, num_lines = bb.make_definitions(file)
     if location > num_lines:
