@@ -187,7 +187,7 @@ def erase_empty_block(blocks, n):
 def make_definitions(tac_file):
     definitions = dict()
     # regex for matching instructions with an assign operator 
-    regex = "^(?P<num>[0-9]+): (?P<var_name>(\w+\[\w+\])|(\w+))+ \s*:=\s*(?P<def>(.)+)$";
+    regex = "^(?P<num>[0-9]+): (?P<var_name>([a-zA-Z]\w*\[\w+\])|([a-zA-Z]\w*)) \s*:=\s*(?P<def>(.)+)$";
     regex_def = re.compile(regex)
     # needed for gen function
     num_lines = 0
