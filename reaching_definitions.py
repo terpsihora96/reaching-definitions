@@ -52,38 +52,53 @@ def algorithm(list_ids, blocks):
                 if s != block_id:
                     w.append(s)
 
-def get_definitions(definitions, var_def, blocks, location, file):
+def get_definitions(num_lines, blocks_ids, definitions, var_def, return_goto, blocks, location, file):
     if location not in definitions.keys():
         print("\nNo assignment at " + str(location) + ".\n" + bb.get_line(file, location))
         exit(0)
     
     locations = []
+    next_leader = 0
+    len_blocks = len(blocks_ids)
 
     # find variable - left side of location
     for d in definitions.items():
         if d[0] == location:
             var = d[1][0]
     
-    for block in blocks:
+    for i, block in enumerate(blocks):
+        if i + 1 < len_blocks:
+                next_leader = blocks[i + 1].get_id()
+        else:
+            next_leader = num_lines + 1  # +1 because of range()
+
         if location in block.get_out():
-            for gen in block.get_gen():
+            for gen in range(block.get_id(), next_leader):
                 if gen > location:
                     for d in definitions.items():
                         if gen == d[0]:
                             if var in d[1][1]:
                                 locations.append(d[0])
+                    for rg in return_goto.items():
+                        if gen == rg[0]:
+                            if var in rg[1]:
+                                locations.append(rg[0])
         elif location in block.get_kill():
             stop_def = -1
             for def_var in var_def[var]:
                 if def_var >= location and def_var in block.get_gen():
                     stop_def = def_var
-                    break 
-            for gen in block.get_gen():
+                    break
+            for gen in range(block.get_id(), next_leader):
                 if gen <= stop_def:
                     for d in definitions.items():
                         if gen == d[0]:
                             if var in d[1][1]:
                                 locations.append(d[0])
+                    for rg in return_goto.items():
+                        if gen == rg[0]:
+                            if var in rg[1]:
+                                locations.append(rg[0])
     return locations
 
 def main():
@@ -95,7 +110,7 @@ def main():
     file = args.file
     location = args.location
 
-    # parse a file to see whether it contains a
+    # parse file to see whether it contains a
     # valid three-address instructions
     with open(file, "r") as tac_file:
         for i, line in enumerate(tac_file):
@@ -105,19 +120,20 @@ def main():
     if location > num_lines:
         print("No such location.")
         exit(0)
+    return_goto = bb.make_return_goto(file, list(definitions.keys()))
+
     blocks = bb.make_basic_blocks(file)
-    var_def = bb.make_map(definitions)
+    blocks = bb.erase_empty_block(blocks, len(blocks) - 1)
+
+    var_def = bb.var_def(definitions)
     list_ids = bb.block_ids(blocks)
     gen(blocks, list_ids, list(definitions.keys()))  
-    blocks = bb.erase_empty_block(blocks, len(blocks) - 1)
-    
-    list_ids = bb.block_ids(blocks)
     kill(blocks, definitions, var_def)
     
     algorithm(list_ids, blocks)
     # bb.print_blocks(blocks)
 
-    locations = get_definitions(definitions, var_def, blocks, location, file)
+    locations = get_definitions(num_lines, list_ids, definitions, var_def, return_goto, blocks, location, file)
     bb.print_locations(file, location, locations)
 
 if __name__ == "__main__":

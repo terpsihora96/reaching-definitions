@@ -13,15 +13,16 @@ class BasicBlock:
         self._gen = set()
     
     def __str__(self):
-        print("ID", self._id_bb) 
-        print("entries = ", self._entries)
-        print("successors = ", self._successors)
-        print("OUT = ", self._out)
-        print("IN = ", self._in)
-        print("GEN = ", self._gen) 
-        print("KILL = ", self._kill)
-        print("----------------------------")
-        print("----------------------------")
+        bb = "ID " + str(self.get_id())
+        bb += "\nentries = " + str(self.get_entries())
+        bb += "\nsuccessors = " + str(self.get_successors())
+        bb += "\nOUT = " + str(self.get_out())
+        bb += "\nIN = " + str(self.get_in())
+        bb += "\nGEN = " + str(self.get_gen())
+        bb += "\nKILL = " + str(self.get_kill())
+        bb += "\n----------------------------\n----------------------------"
+        
+        return bb
 
     # getters
     def get_id(self):
@@ -57,8 +58,6 @@ class BasicBlock:
 
     def set_out(self, element):
         self._out |= element
-    
-    __repr__ = __str__
 
 def make_basic_blocks(tac_file):
     map_entries = make_entries(tac_file)
@@ -120,7 +119,7 @@ def make_entries(tac_file):
 
 def make_successors(tac_file):
     # regex for matching instructions with goto
-    regex = "^(?P<num>[0-9]+): (.)*goto [(](?P<goto_num>[0-9]+)[)]$";
+    regex = "^(?P<num>[0-9]+): (.)*goto [(](?P<goto_num>[0-9]+)[)]$"
     regex_goto = re.compile(regex)
     # dict for saving leader instruction and its succeeding branches
     # 1st instruction is a leader
@@ -179,6 +178,7 @@ def erase_empty_block(blocks, n):
     if bool(blocks[n].get_gen()) == False:
         blocks[n - 1].get_successors().remove(blocks[n].get_id())
         blocks.pop()
+
     return blocks
 
 # returns a map 
@@ -187,7 +187,7 @@ def erase_empty_block(blocks, n):
 def make_definitions(tac_file):
     definitions = dict()
     # regex for matching instructions with an assign operator 
-    regex = "^(?P<num>[0-9]+): (?P<var_name>([a-zA-Z]\w*\[\w+\])|([a-zA-Z]\w*)) \s*:=\s*(?P<def>(.)+)$";
+    regex = "^(?P<num>[0-9]+): (?P<var_name>([a-zA-Z]\w*\[\w+\])|([a-zA-Z]\w*)) \s*:=\s*(?P<def>(.)+)$"
     regex_def = re.compile(regex)
     # needed for gen function
     num_lines = 0
@@ -209,10 +209,38 @@ def make_definitions(tac_file):
                 definitions[num] = (var_name, definition)                
     return definitions, num_lines
 
+# returns a map 
+# key: number of an instruction
+# value: list of variables used in an instruction
+def make_return_goto(tac_file, definitions):
+    return_goto = dict()
+    regex_return = "^[0-9]+: return \s*(?P<expr>(.)+)"
+    regex_ret = re.compile(regex_return)
+    regex_goto = "^[0-9]+: if(?P<expr>((.)+))goto [(][0-9]+[)]$"
+    regex_gt = re.compile(regex_goto)
+
+    with open(tac_file, "r") as file:
+        for i, line in enumerate(file):
+            # i goes from 0, definitions from 1
+            if binary_search(definitions, i + 1) == -1:
+                match_re = re.match(regex_ret, line.strip())
+                match_gt = re.match(regex_gt, line.strip())
+
+                if match_re is not None: 
+                    expr = match_re.group("expr")
+                    expr = re.findall(r'(\w+\[\w+\])|([a-zA-Z]+[0-9]*)', expr.strip())
+                    return_goto[i + 1] = list(map(lambda x: x[0] + x[1], expr))
+                elif match_gt is not None:
+                    expr = match_gt.group("expr")
+                    expr = re.findall(r'(\w+\[\w+\])|([a-zA-Z]+[0-9]*)', expr.strip())
+                    return_goto[i + 1] = list(map(lambda x: x[0] + x[1], expr))
+
+    return return_goto
+
 # returns a map
 # key x is a left side of the assignement
 # value is a list of definitions of x 
-def make_map(definitions):
+def var_def(definitions):
     new_map = dict()
     for definition in definitions.items():
         key = definition[1][0]
@@ -253,10 +281,10 @@ def get_line(tac_file, location):
 def print_blocks(blocks):
     for i, b in enumerate(blocks):
         print("B" + str(i + 1))
-        b.__str__()
+        print(b.__str__())
 
 def print_locations(file, location, locations):
-    print("Definition ")
+    print("\nDefinition ")
     print(str.rstrip(get_line(file, location)))
     if len(locations) == 0:
         print("is used nowhere.")
