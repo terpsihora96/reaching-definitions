@@ -116,7 +116,7 @@ def main():
             yacc.parse(line)
 
     definitions, num_lines = bb.make_definitions(file)
-    if location > num_lines:
+    if location > num_lines or location < 1:
         print("No such location.")
         exit(0)
     return_goto = bb.make_return_goto(file, list(definitions.keys()))
