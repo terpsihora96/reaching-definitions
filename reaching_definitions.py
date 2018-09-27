@@ -1,6 +1,5 @@
 import copy
 import argparse
-from sys import argv
 
 import yacc
 import parser
@@ -102,11 +101,11 @@ def get_definitions(num_lines, blocks_ids, definitions, var_def, return_goto, bl
     return locations
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("file", help="name of a file with three-address instructions")
-    parser.add_argument("location", type=int, help="location of a definition in a given file")
+    args_parser = argparse.ArgumentParser()
+    args_parser.add_argument("file", help="name of a file with three-address instructions")
+    args_parser.add_argument("location", type=int, help="location of a definition in a given file")
     
-    args = parser.parse_args()
+    args = args_parser.parse_args()
     file = args.file
     location = args.location
 
