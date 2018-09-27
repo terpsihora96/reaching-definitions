@@ -3,7 +3,7 @@ from sys import exit
 
 tokens = [
     'NUMBER', 'ID',
-    'OPERATOR',
+    'PLUS', 'MINUS', 'TIMES', 'DIVIDE',
     'LTGT',
     'LPAR','RPAR', 'ASSIGN',
     'NEWLINE', 'IF', 'GOTO', 'RETURN'
@@ -29,8 +29,20 @@ def t_NUMBER(t):
     t.value = int(t.value)
     return t
 
-def t_OPERATOR(t):
-    r'[+*/-]'
+def t_PLUS(t):
+    r'[+]'
+    return t
+
+def t_MINUS(t):
+    r'[-]'
+    return t
+
+def t_TIMES(t):
+    r'[*]'
+    return t
+
+def t_DIVIDE(t):
+    r'[/]'
     return t
 
 def t_LTGT(t):

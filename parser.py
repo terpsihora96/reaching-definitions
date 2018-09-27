@@ -1,5 +1,4 @@
 import yacc
-import lex
 import lexer
 from sys import exit
 
@@ -7,7 +6,7 @@ tokens = lexer.tokens
 
 precedence = (
     ('nonassoc', 'LTGT'),
-    ('left', 'OPERATOR')
+    ('left', 'PLUS', 'MINUS', 'TIMES','DIVIDE')
 )
 
 def p_instruction(t):
@@ -26,15 +25,17 @@ def p_condition(t):
     '''condition : var_num LTGT var_num'''
 
 def p_E(t):
-    '''E : ID OPERATOR ID
-        | ID OPERATOR NUMBER
-        | NUMBER OPERATOR ID
-        | NUMBER OPERATOR NUMBER
+    '''E : var_num PLUS var_num
+        | var_num MINUS var_num
+        | var_num DIVIDE var_num
+        | var_num TIMES var_num
         | var_num'''
 
 def p_var_num(t):
     '''var_num : NUMBER
-                | ID'''
+                | ID
+                | MINUS ID
+                | MINUS NUMBER'''
 
 def p_error(t):
     print("Syntax error.")
