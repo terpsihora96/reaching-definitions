@@ -35,7 +35,9 @@ def p_var_num(t):
     '''var_num : NUMBER
                 | ID
                 | MINUS ID
-                | MINUS NUMBER'''
+                | MINUS NUMBER
+                | LPAR MINUS NUMBER RPAR
+                | LPAR MINUS ID RPAR '''
 
 def p_error(t):
     print("Syntax error.")
