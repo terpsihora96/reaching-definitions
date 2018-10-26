@@ -13,18 +13,19 @@ class BasicBlock:
         self._gen = set()
     
     def __str__(self):
-        bb = "ID " + str(self.get_id())
-        bb += "\nentries = " + str(self.get_entries())
-        bb += "\nsuccessors = " + str(self.get_successors())
-        bb += "\nOUT = " + str(self.get_out())
-        bb += "\nIN = " + str(self.get_in())
-        bb += "\nGEN = " + str(self.get_gen())
-        bb += "\nKILL = " + str(self.get_kill())
-        bb += "\n----------------------------\n----------------------------"
-        
+        bb =  f'ID {self._id_bb}\n'
+        bb += f'entries = {self._entries}\n'
+        bb += f'successors = {self._successors}\n'
+        bb += f'OUT = {self._out}\n'
+        bb += f'IN = {self._in}\n'
+        bb += f'GEN = {self._gen}\n'
+        bb += f'KILL = {self._kill}\n'
         return bb
 
-    # getters
+    def __repr__(self):
+        return (f'{self.__class__.__name__}('
+                f'{self._id_bb!r}, {self._entries!r}, {self._successors!r})')
+
     def get_id(self):
         return self._id_bb
     
@@ -46,7 +47,6 @@ class BasicBlock:
     def get_gen(self):
         return self._gen
     
-    # setters
     def set_gen(self, element):
         self._gen |= element
 
@@ -69,7 +69,6 @@ def make_basic_blocks(tac_file):
         for key1, successors in map_successors.items():
             if key == key1:
                 basic_blocks.append(BasicBlock(key, entries, successors))
-    
     return basic_blocks
 
 def make_entries(tac_file):
@@ -138,7 +137,7 @@ def make_successors(tac_file):
                     map_successors[goto_num] = []
 
                 if num + 1 not in map_successors.keys():
-                    map_successors[num + 1] = []
+                    map_successors[num+1] = []
                  
     map_leaders = make_entries(tac_file)
     map_successors = collections.OrderedDict(sorted(map_successors.items()))
@@ -163,22 +162,20 @@ def make_successors(tac_file):
     # in a list of basic blocks
     for x in map_valid_successors.items():
         if x[1] == []:
-            for index, leader in enumerate(leaders):
+            for i, leader in enumerate(leaders):
                 if leader[0] != x[0]:
                     pass
                 else:
-                    if index + 1 < len(map_leaders.keys()):
-                        x[1].append(leaders[index + 1][0])
-
+                    if i + 1 < len(map_leaders.keys()):
+                        x[1].append(leaders[i+1][0])
     return map_valid_successors
 
 # erase block that generates nothing
 # edge case when last instruction is goto
 def erase_empty_block(blocks, n):
     if bool(blocks[n].get_gen()) == False:
-        blocks[n - 1].get_successors().remove(blocks[n].get_id())
+        blocks[n-1].get_successors().remove(blocks[n].get_id())
         blocks.pop()
-
     return blocks
 
 # returns a map 
@@ -234,7 +231,6 @@ def make_return_goto(tac_file, definitions):
                     expr = match_gt.group("expr")
                     expr = re.findall(r'(\w+\[\w+\])|([a-zA-Z]+[0-9]*)', expr.strip())
                     return_goto[i + 1] = list(map(lambda x: x[0] + x[1], expr))
-
     return return_goto
 
 # returns a map
@@ -274,14 +270,15 @@ def binary_search(list_items, item):
 def get_line(tac_file, location):
     with open(tac_file, "r") as file:
         for i, line in enumerate(file):
-            # location is counted from 1 and i from 0
+            # location is counted from 1
             if i == location - 1:
                 return line
 
 def print_blocks(blocks):
     for i, b in enumerate(blocks):
-        print("B" + str(i + 1))
-        print(b.__str__())
+        print(f'B{i + 1}')
+        print(b)
+        print("----------------------------\n----------------------------")
 
 def print_locations(file, location, locations):
     print("\nDefinition ")
